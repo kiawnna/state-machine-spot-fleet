@@ -1,0 +1,42 @@
+service: stepfunction
+
+provider:
+  name: aws
+  runtime: python3.8
+  stage: prod
+  region: us-west-2
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - ec2:*
+        # - ec2:DescribeInstances
+        # - ec2:StopInstances
+        # - ec2:StartInstances
+        # - ec2:RequestSpotInstances
+        # - ec2:RequestSpotFleet
+        # - ec2:DescribeSpotInstanceRequests
+      Resource: '*'
+    - Effect: Allow
+      Action:
+        - iam:CreateServiceLinkedRole
+        - iam:PassRole
+        - iam:ListRoles
+        - iam:ListInstanceProfiles
+      Resource: '*'
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: '*'
+     
+functions:
+  request-spot-fleet:
+    handler: handler.handler
+    timeout: 60
+
+  check-request-state:
+    handler: handler.handler1
+    timeout: 60
+
+  check-job-status:
+    handler: handler.handler2
+    timeout: 60

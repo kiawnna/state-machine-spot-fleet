@@ -1,0 +1,120 @@
+{
+  "Comment": "A Hello World example demonstrating various state types of the Amazon States Language",
+  "StartAt": "Launch Instance",
+  "States": {
+    "Launch Instance": {
+      "Resource": "arn:aws:lambda:REGION:ACCOUNTID:function:stepfunction-prod-request-spot-fleet", //udpate this arn 
+      "Type": "Task",
+      "Next": "Request ID Found?"
+    },
+    "Request ID Found?": {
+      "Comment": "A Choice state adds branching logic to a state machine. Choice rules can implement 16 different comparison operators, and can be combined using And, Or, and Not",
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.request_id_found",
+          "BooleanEquals": true,
+          "Next": "Yes"
+        },
+        {
+          "Variable": "$.request_id_found",
+          "BooleanEquals": false,
+          "Next": "No"
+        }
+      ],
+      "Default": "Yes"
+    },
+    "Yes": {
+      "Type": "Pass",
+      "Next": "Check request status"
+    },
+    "No": {
+      "Type": "Pass",
+      "Next": "Launch Instance"
+    },
+    "Check request status": {
+      "Resource": "arn:aws:lambda:REGION:ACCOUNTID:function:stepfunction-prod-check-request-state", //udpate this arn 
+      "Type": "Task",
+      "Next": "Request succeeded?"
+    },
+    "Request succeeded?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.request_succeeded",
+          "StringEquals": "true",
+          "Next": "Request succeeded"
+        },
+        {
+          "Variable": "$.request_succeeded",
+          "StringEquals": "false",
+          "Next": "Request not successful"
+        },
+        {
+          "Variable": "$.request_succeeded",
+          "StringEquals": "still_waiting",
+          "Next": "Request still processing"
+        },
+        {
+          "Variable": "$.request_succeeded",
+          "StringEquals": "failed",
+          "Next": "Failed"
+        }
+      ],
+      "Default": "Request succeeded"
+    },
+    "Request succeeded": {
+      "Type": "Pass",
+      "Next": "Check job status"
+    },
+    "Request not successful": {
+      "Type": "Pass",
+      "Next": "Launch Instance"
+    },
+    "Request still processing": {
+      "Type": "Pass",
+      "Next": "Check request status"
+    },
+    "Check job status": {
+      "Resource": "arn:aws:lambda:REGION:ACCOUNTID:function:stepfunction-prod-check-job-status", //udpate this arn 
+      "Type": "Task",
+      "Next": "Job in progress?"
+    },
+    "Job in progress?": {
+       "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.job_completed",
+          "StringEquals": "in_progress",
+          "Next": "Job still running."
+        },
+        {
+          "Variable": "$.job_completed",
+          "StringEquals": "true",
+          "Next": "Completed"
+        },
+        {
+          "Variable": "$.job_completed",
+          "StringEquals": "false",
+          "Next": "Failed"
+        }
+      ],
+      "Default": "Completed"
+    },
+    "Completed": {
+      "Type": "Succeed"
+    },
+    "Job still running.": {
+      "Type": "Pass",
+      "Next": "Check again"
+    },
+    "Check again": {
+      "Type": "Wait",
+      "Seconds": 20,
+      "Next": "Job in progress?"
+     },
+    "Failed": {
+      "Type": "Fail"
+    }
+  }
+}
