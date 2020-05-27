@@ -8,13 +8,13 @@ provider:
   iamRoleStatements:
     - Effect: Allow
       Action:
-        - ec2:*
-        # - ec2:DescribeInstances
-        # - ec2:StopInstances
-        # - ec2:StartInstances
-        # - ec2:RequestSpotInstances
-        # - ec2:RequestSpotFleet
-        # - ec2:DescribeSpotInstanceRequests
+        - ec2:DescribeInstances
+        - ec2:StopInstances
+        - ec2:StartInstances
+        - ec2:RequestSpotInstances
+        - ec2:RequestSpotFleet
+        - ec2:DescribeSpotInstanceRequests
+        # you can alternatively give ec2 all permissions, if permissions are still not working
       Resource: '*'
     - Effect: Allow
       Action:
@@ -26,7 +26,7 @@ provider:
     - Effect: Allow
       Action:
         - dynamodb:*
-      Resource: '*'
+      Resource: '*' #pass the arn of the table here
      
 functions:
   request-spot-fleet:

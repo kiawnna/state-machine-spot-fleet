@@ -5,6 +5,8 @@ import base64
 import time
 
 # request-spot-fleet
+# This function requests a spot fleet with a target capacity of 1. A spot fleet is requested so that multiple instance types can
+# be specified for spot to choose from.
 def handler(event, context):
     try:
         client = boto3.client('ec2')
@@ -55,6 +57,9 @@ def handler(event, context):
         return event
     
 # check-request-state
+# This function will continually check for the request_id of the spot fleet and return the appropriate status each time. If 
+# an id is not found, the state machine will automatically have it check again after waiting for a set period of time
+# until a request_id is found.
 def handler1(event, context):
     try:
         client = boto3.client('ec2')
@@ -85,6 +90,11 @@ def handler1(event, context):
         return event
 
 # check-job-status
+# This function will check the status of a job, job_status, stored in a DynamoDB table. Initially,
+# a job_id needs to be passed into the execution, so this function knows which item to check in
+# DynamoDB. An outside event (the job running on the instance--for this project a bash scrip
+# was used to update the job_status to "completed" when the job was done running) needs to update
+# the job_status, so that when a job is completed this function can return a completed status.
 def handler2(event, context):
     client = boto3.client('dynamodb')
     response = client.get_item(
